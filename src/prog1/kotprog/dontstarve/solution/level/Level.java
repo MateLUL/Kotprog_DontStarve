@@ -36,7 +36,7 @@ public class Level {
 
     /**
      * A pálya szélességét lekérdező metódus.
-     * @return a pály szélessége
+     * @return a pálya szélessége
      */
     public int getWidth() {
         return image.getWidth();

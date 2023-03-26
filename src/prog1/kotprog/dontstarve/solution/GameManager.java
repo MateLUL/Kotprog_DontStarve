@@ -7,11 +7,13 @@ import prog1.kotprog.dontstarve.solution.exceptions.NotImplementedException;
 import prog1.kotprog.dontstarve.solution.inventory.BaseInventory;
 import prog1.kotprog.dontstarve.solution.inventory.items.AbstractItem;
 import prog1.kotprog.dontstarve.solution.level.BaseField;
+import prog1.kotprog.dontstarve.solution.level.Field;
 import prog1.kotprog.dontstarve.solution.level.Level;
 import prog1.kotprog.dontstarve.solution.level.MapColors;
 import prog1.kotprog.dontstarve.solution.utility.Position;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 
@@ -30,10 +32,13 @@ public final class GameManager {
      */
     private final Random random = new Random();
 
+    ArrayList<BaseCharacter> characters = new ArrayList<>();
+
     /**
      * Az osztály privát konstruktora.
      */
-    private GameManager() {}
+    private GameManager() {
+    }
 
     /**
      * Az osztályból létrehozott példány elérésére szolgáló metódus.
@@ -79,7 +84,16 @@ public final class GameManager {
      * @return Az adott nevű karakter objektum, vagy null, ha már a karakter meghalt vagy nem is létezett
      */
     public BaseCharacter getCharacter(String name) {
-        throw new NotImplementedException();
+        for (int i = 0; i < characters.size(); i++) {
+            if (name.equals(characters.get(i).getName())) {
+                if (characters.get(i).getHp() == 0)
+                    return null;
+                else
+                    return characters.get(i);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -87,7 +101,14 @@ public final class GameManager {
      * @return Az életben lévő karakterek száma
      */
     public int remainingCharacters() {
-        throw new NotImplementedException();
+        int remaining = 0;
+
+        for (int i = 0; i < characters.size(); i++) {
+            if (characters.get(i).getHp() > 0)
+                remaining++;
+        }
+
+        return remaining;
     }
 
     /**
@@ -97,15 +118,8 @@ public final class GameManager {
      * @param level a fájlból betöltött pálya
      */
     public void loadLevel(Level level) {
-        //Oszlopok vizsgálata
-        for (int i = 0; i < level.getWidth(); i++) {
-            //Sorok vizsgálata
-            for (int j = 0; j < level.getHeight(); j++) {
+        //loadedLevel.getWidth() = level.getWidth();
 
-            }
-        }
-
-        throw new NotImplementedException();
     }
 
     /**
@@ -115,7 +129,6 @@ public final class GameManager {
      * @return az adott koordinátán lévő mező
      */
     public BaseField getField(int x, int y) {
-
         return null;
     }
 
@@ -126,7 +139,20 @@ public final class GameManager {
      * @return igaz, ha sikerült elkezdeni a játékot; hamis egyébként
      */
     public boolean startGame() {
-        throw new NotImplementedException();
+        int humanPlayerCounter = 0;
+
+        if (characters.size() >= 2) {
+            for (int i = 0; i < characters.size(); i++) {
+                if (characters.get(i).isHumanPlayer())
+                    humanPlayerCounter++;
+            }
+            if (humanPlayerCounter == 1)
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
     }
 
     /**
@@ -156,7 +182,13 @@ public final class GameManager {
      * @return a győztes karakter vagy null
      */
     public BaseCharacter getWinner() {
-        throw new NotImplementedException();
+        if (remainingCharacters() == 1 || !isGameEnded())
+            for (int i = 0; i < characters.size(); i++) {
+                if (characters.get(i).getHp() > 0)
+                    return characters.get(i);
+            }
+
+        return null;
     }
 
     /**
@@ -172,7 +204,10 @@ public final class GameManager {
      * @return igaz, ha a játék már befejeződött; hamis egyébként
      */
     public boolean isGameEnded() {
-        throw new NotImplementedException();
+        if (remainingCharacters() == 1)
+            return true;
+        else
+            return false;
     }
 
     /**
@@ -183,11 +218,12 @@ public final class GameManager {
      * @param tutorial igaz, amennyiben tutorial módot szeretnénk; hamis egyébként
      */
     public void setTutorial(boolean tutorial) {
-        throw new NotImplementedException();
+        tutorial = false;
+
     }
 
 
     public static void main(String[] args) {
-        //Character character = new Character();
+
     }
 }

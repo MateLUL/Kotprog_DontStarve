@@ -1,41 +1,43 @@
 package prog1.kotprog.dontstarve.solution.level;
 
+import prog1.kotprog.dontstarve.solution.GameManager;
 import prog1.kotprog.dontstarve.solution.inventory.items.AbstractItem;
+import prog1.kotprog.dontstarve.solution.utility.Position;
 
 public class Field implements BaseField {
     @Override
     public boolean isWalkable() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasTree() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasStone() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasTwig() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasBerry() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasCarrot() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasFire() {
-        return false;
+        return true;
     }
 
     @Override

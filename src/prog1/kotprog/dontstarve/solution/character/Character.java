@@ -11,12 +11,17 @@ public class Character implements BaseCharacter {
     Action lastAction;
     Position currentPosition;
     BaseInventory inventory;
+    boolean isHumanPlayer;
 
-    public Character(String name, float hp, float hunger, float speed) {
+    public Character(String name, Action lastAction, Position currentPosition, BaseInventory inventory, boolean isHumanPlayer) {
         this.name = name;
-        this.hp = hp;
-        this.hunger = hunger;
-        this.speed = speed;
+        hp = 100;
+        hunger = 100;
+        speed = 1;
+        this.lastAction = lastAction;
+        this.currentPosition = currentPosition;
+        this.inventory = inventory;
+        this.isHumanPlayer = isHumanPlayer;
     }
 
     @Override
@@ -52,5 +57,23 @@ public class Character implements BaseCharacter {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public void setHp(int newValue) {
+        hp -= newValue;
+    }
+
+    @Override
+    public void setHunger(int newValue) {
+        hunger -= newValue;
+    }
+
+    @Override
+    public boolean isHumanPlayer() {
+        if (isHumanPlayer)
+            return true;
+        else
+            return false;
     }
 }

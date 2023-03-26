@@ -43,7 +43,7 @@ public abstract class AbstractItem {
     }
 
     public void setAmount(int newAmount) {
-        amount += newAmount;
+        amount = newAmount;
     }
 
     public boolean isStackable() {

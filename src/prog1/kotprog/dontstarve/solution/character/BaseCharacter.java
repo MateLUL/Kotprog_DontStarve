@@ -53,4 +53,10 @@ public interface BaseCharacter {
      * @return a játékos neve
      */
     String getName();
+
+    void setHp(int newValue);
+
+    void setHunger(int newValue);
+
+    boolean isHumanPlayer();
 }

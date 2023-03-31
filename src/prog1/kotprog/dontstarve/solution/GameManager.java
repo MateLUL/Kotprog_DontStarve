@@ -24,12 +24,24 @@ import java.util.Random;
  * Az osztály a singleton tervezési mintát valósítja meg.
  */
 public final class GameManager {
+    /**
+     * Joinolt karakterek listája.
+     */
     List<BaseCharacter> characters;
+
+    /**
+     * Betöltött szint.
+     */
     Level currentLevel;
+
+    /**
+     * Betöltött szint mezői.
+     */
     BaseField[][] loadedLevel;
-    boolean isLoaded;
-    boolean isStarted;
-    int timeInGame;
+
+    private boolean loaded;
+    private boolean started;
+    private int timeInGame;
 
     /**
      * Az osztályból létrehozott egyetlen példány (nem lehet final).
@@ -45,8 +57,8 @@ public final class GameManager {
      * Az osztály privát konstruktora.
      */
     private GameManager() {
-        isLoaded = false;
-        isStarted = false;
+        loaded = false;
+        started = false;
         timeInGame = 0;
         characters = new ArrayList<>();
     }
@@ -99,7 +111,7 @@ public final class GameManager {
             }
         }
 
-        if (!isGameStarted() && isLoaded && playerCount <= 1 && !notUniqueNames) {
+        if (!isGameStarted() && isLoaded() && playerCount <= 1 && !notUniqueNames) {
             Position initialPosition = new Position(0, 0);
             int minWidth = 0;
             int minLength = 0;
@@ -192,7 +204,7 @@ public final class GameManager {
      * @param level a fájlból betöltött pálya
      */
     public void loadLevel(Level level) {
-        if (!isLoaded) {
+        if (!isLoaded()) {
             loadedLevel = new Field[level.getWidth()][level.getHeight()];
             currentLevel = level;
 
@@ -202,8 +214,16 @@ public final class GameManager {
                 }
             }
 
-            isLoaded = true;
+            setLoaded();
         }
+    }
+
+    private boolean isLoaded() {
+        return loaded;
+    }
+
+    private void setLoaded() {
+        this.loaded = true;
     }
 
     /**
@@ -223,7 +243,7 @@ public final class GameManager {
      * @return igaz, ha sikerült elkezdeni a játékot; hamis egyébként
      */
     public boolean startGame() {
-        if (!isStarted) {
+        if (!isGameStarted()) {
             int playerCounter = 0;
 
             if (characters.size() >= 2) {
@@ -234,7 +254,7 @@ public final class GameManager {
                 }
 
                 if (playerCounter == 1) {
-                    isStarted = true;
+                    setGameStarted();
                     return true;
                 }
             }
@@ -286,7 +306,11 @@ public final class GameManager {
      * @return igaz, ha a játék már elkezdődött; hamis egyébként
      */
     public boolean isGameStarted() {
-        return isStarted;
+        return started;
+    }
+
+    private void setGameStarted() {
+        this.started = true;
     }
 
     /**

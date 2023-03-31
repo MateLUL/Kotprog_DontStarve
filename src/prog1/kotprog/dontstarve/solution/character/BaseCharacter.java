@@ -54,9 +54,21 @@ public interface BaseCharacter {
      */
     String getName();
 
+    /**
+     * A karakter hp-jának beállítása.
+     * @param newValue az új érték
+     */
     void setHp(int newValue);
 
+    /**
+     * A karakter éhségének beállítása.
+     * @param newValue az új érték
+     */
     void setHunger(int newValue);
 
+    /**
+     * Annak a vizsgálata, hogy az adott karakter ember által irányított-e vagy sem.
+     * @return igaz, ha ember által irányított, hamis, ha nem
+     */
     boolean isHumanPlayer();
 }

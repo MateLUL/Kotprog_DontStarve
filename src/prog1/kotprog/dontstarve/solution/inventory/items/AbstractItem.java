@@ -47,22 +47,16 @@ public abstract class AbstractItem {
     }
 
     public boolean isStackable() {
-        if (getType() == ItemType.AXE || getType() == ItemType.PICKAXE || getType() == ItemType.SPEAR || getType() == ItemType.TORCH)
-            return false;
-        else
-            return true;
+        return getType() != ItemType.AXE && getType() != ItemType.PICKAXE && getType() != ItemType.SPEAR && getType() != ItemType.TORCH;
     }
 
     public int getMaxStack() {
-        switch (getType()) {
-            case LOG:
-                return 15;
-            case STONE, RAW_CARROT, RAW_BERRY, COOKED_CARROT, COOKED_BERRY:
-                return 10;
-            case TWIG:
-                return 20;
-            default:
-                return 0;
-        }
+        return switch (getType()) {
+            case LOG -> 15;
+            case STONE, RAW_CARROT, RAW_BERRY, COOKED_CARROT, COOKED_BERRY -> 10;
+            case TWIG -> 20;
+            case SPEAR, AXE, PICKAXE, TORCH -> 1;
+            default -> 0;
+        };
     }
 }

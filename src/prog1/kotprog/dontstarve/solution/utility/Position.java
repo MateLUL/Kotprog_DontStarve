@@ -1,7 +1,5 @@
 package prog1.kotprog.dontstarve.solution.utility;
 
-import prog1.kotprog.dontstarve.solution.exceptions.NotImplementedException;
-
 /**
  * Egy 2 dimenziós (x, y) koordinátát leíró osztály.
  */
@@ -32,7 +30,7 @@ public class Position {
      * @return a kiszámolt pozíció
      */
     public Position getNearestWholePosition() {
-        throw new NotImplementedException();
+        return new Position(Math.round(x), Math.round(y));
     }
 
     /**

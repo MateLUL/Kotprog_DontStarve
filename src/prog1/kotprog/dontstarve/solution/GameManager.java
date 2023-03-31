@@ -4,17 +4,19 @@ import prog1.kotprog.dontstarve.solution.character.BaseCharacter;
 import prog1.kotprog.dontstarve.solution.character.Character;
 import prog1.kotprog.dontstarve.solution.character.actions.Action;
 import prog1.kotprog.dontstarve.solution.exceptions.NotImplementedException;
-import prog1.kotprog.dontstarve.solution.inventory.BaseInventory;
-import prog1.kotprog.dontstarve.solution.inventory.items.AbstractItem;
+import prog1.kotprog.dontstarve.solution.inventory.items.ItemRawCarrot;
+import prog1.kotprog.dontstarve.solution.inventory.items.ItemLog;
+import prog1.kotprog.dontstarve.solution.inventory.items.ItemRawBerry;
+import prog1.kotprog.dontstarve.solution.inventory.items.ItemTwig;
+import prog1.kotprog.dontstarve.solution.inventory.items.ItemStone;
 import prog1.kotprog.dontstarve.solution.level.BaseField;
 import prog1.kotprog.dontstarve.solution.level.Field;
 import prog1.kotprog.dontstarve.solution.level.Level;
-import prog1.kotprog.dontstarve.solution.level.MapColors;
 import prog1.kotprog.dontstarve.solution.utility.Position;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -22,6 +24,13 @@ import java.util.Random;
  * Az osztály a singleton tervezési mintát valósítja meg.
  */
 public final class GameManager {
+    List<BaseCharacter> characters;
+    Level currentLevel;
+    BaseField[][] loadedLevel;
+    boolean isLoaded;
+    boolean isStarted;
+    int timeInGame;
+
     /**
      * Az osztályból létrehozott egyetlen példány (nem lehet final).
      */
@@ -32,12 +41,14 @@ public final class GameManager {
      */
     private final Random random = new Random();
 
-    ArrayList<BaseCharacter> characters = new ArrayList<>();
-
     /**
      * Az osztály privát konstruktora.
      */
     private GameManager() {
+        isLoaded = false;
+        isStarted = false;
+        timeInGame = 0;
+        characters = new ArrayList<>();
     }
 
     /**
@@ -70,12 +81,77 @@ public final class GameManager {
      * @return a karakter pozíciója a pályán, vagy (Integer.MAX_VALUE, Integer.MAX_VALUE) ha nem sikerült hozzáadni
      */
     public Position joinCharacter(String name, boolean player) {
-        Position maxValue = new Position(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        int playerCount = 0;
+        boolean notUniqueNames = false;
 
-        if (!isGameStarted() && player)
-            return getCharacter(name).getCurrentPosition();
-        else
-            return maxValue;
+        if (player) {
+            playerCount++;
+        }
+
+        //Checking if characters array already has a player and the new char's name is unique
+        for (BaseCharacter character : characters) {
+            if (character.isHumanPlayer()) {
+                playerCount++;
+            }
+
+            if (name.equals(character.getName())) {
+                notUniqueNames = true;
+            }
+        }
+
+        if (!isGameStarted() && isLoaded && playerCount <= 1 && !notUniqueNames) {
+            Position initialPosition = new Position(0, 0);
+            int minWidth = 0;
+            int minLength = 0;
+
+            initialPosition = setInitialPosition(initialPosition, minWidth, minLength);
+            characters.add(new Character(name, player, initialPosition));
+            addRandomItems(name);
+
+            return initialPosition;
+        }
+        return new Position(Integer.MAX_VALUE,Integer.MAX_VALUE);
+    }
+
+    //Set character's starting position
+    private Position setInitialPosition(Position initialPosition, int minWidth, int minLength) {
+        for (int i = 0; i < currentLevel.getWidth(); i++) {
+            minWidth++;
+            for (int j = 0; j < currentLevel.getHeight(); j++) {
+                minLength++;
+
+                for (BaseCharacter character : characters) {
+                    if (loadedLevel[i][j].isWalkable() && minWidth >= 50 && minLength >= 50 && !Objects.equals(character.getCurrentPosition(), new Position(i, j))) {
+                        initialPosition = new Position(i, j);
+
+                        minLength = 0;
+                        minWidth = 0;
+                    }
+
+                    if (Objects.equals(character.getCurrentPosition(), new Position(i, j))) {
+                        minLength = 0;
+                        minWidth = 0;
+                    }
+                }
+            }
+        }
+
+        return initialPosition;
+    }
+
+    //Adding random items to character's inventory
+    private void addRandomItems(String name) {
+        for (int i = 0; i < 4; i++) {
+            int randomItem = getRandom().nextInt(5) + 1;
+
+            switch (randomItem) {
+                case 1 -> Objects.requireNonNull(getCharacter(name)).getInventory().addItem(new ItemStone(1));
+                case 2 -> Objects.requireNonNull(getCharacter(name)).getInventory().addItem(new ItemTwig(1));
+                case 3 -> Objects.requireNonNull(getCharacter(name)).getInventory().addItem(new ItemLog(1));
+                case 4 -> Objects.requireNonNull(getCharacter(name)).getInventory().addItem(new ItemRawBerry(1));
+                case 5 -> Objects.requireNonNull(getCharacter(name)).getInventory().addItem(new ItemRawCarrot(1));
+            }
+        }
     }
 
     /**
@@ -84,12 +160,9 @@ public final class GameManager {
      * @return Az adott nevű karakter objektum, vagy null, ha már a karakter meghalt vagy nem is létezett
      */
     public BaseCharacter getCharacter(String name) {
-        for (int i = 0; i < characters.size(); i++) {
-            if (name.equals(characters.get(i).getName())) {
-                if (characters.get(i).getHp() == 0)
-                    return null;
-                else
-                    return characters.get(i);
+        for (BaseCharacter character : characters) {
+            if (name.equals(character.getName()) && character.getHp() != 0) {
+                return character;
             }
         }
 
@@ -103,9 +176,10 @@ public final class GameManager {
     public int remainingCharacters() {
         int remaining = 0;
 
-        for (int i = 0; i < characters.size(); i++) {
-            if (characters.get(i).getHp() > 0)
+        for (BaseCharacter character : characters) {
+            if (character.getHp() > 0) {
                 remaining++;
+            }
         }
 
         return remaining;
@@ -118,8 +192,18 @@ public final class GameManager {
      * @param level a fájlból betöltött pálya
      */
     public void loadLevel(Level level) {
-        //loadedLevel.getWidth() = level.getWidth();
+        if (!isLoaded) {
+            loadedLevel = new Field[level.getWidth()][level.getHeight()];
+            currentLevel = level;
 
+            for (int i = 0; i < level.getWidth(); i++) {
+                for (int j = 0; j < level.getHeight(); j++) {
+                    loadedLevel[i][j] = new Field(level.getColor(i, j));
+                }
+            }
+
+            isLoaded = true;
+        }
     }
 
     /**
@@ -129,7 +213,7 @@ public final class GameManager {
      * @return az adott koordinátán lévő mező
      */
     public BaseField getField(int x, int y) {
-        return null;
+        return loadedLevel[x][y];
     }
 
     /**
@@ -139,20 +223,24 @@ public final class GameManager {
      * @return igaz, ha sikerült elkezdeni a játékot; hamis egyébként
      */
     public boolean startGame() {
-        int humanPlayerCounter = 0;
+        if (!isStarted) {
+            int playerCounter = 0;
 
-        if (characters.size() >= 2) {
-            for (int i = 0; i < characters.size(); i++) {
-                if (characters.get(i).isHumanPlayer())
-                    humanPlayerCounter++;
+            if (characters.size() >= 2) {
+                for (BaseCharacter character : characters) {
+                    if (character.isHumanPlayer()) {
+                        playerCounter++;
+                    }
+                }
+
+                if (playerCounter == 1) {
+                    isStarted = true;
+                    return true;
+                }
             }
-            if (humanPlayerCounter == 1)
-                return true;
-            else
-                return false;
         }
-        else
-            return false;
+
+        return false;
     }
 
     /**
@@ -173,7 +261,7 @@ public final class GameManager {
      * @return az aktuális időpillanat
      */
     public int time() {
-        throw new NotImplementedException();
+        return timeInGame;
     }
 
     /**
@@ -182,11 +270,13 @@ public final class GameManager {
      * @return a győztes karakter vagy null
      */
     public BaseCharacter getWinner() {
-        if (remainingCharacters() == 1 || !isGameEnded())
-            for (int i = 0; i < characters.size(); i++) {
-                if (characters.get(i).getHp() > 0)
-                    return characters.get(i);
+        if (remainingCharacters() == 1 || isGameEnded()) {
+            for (BaseCharacter character : characters) {
+                if (character.getHp() > 0) {
+                    return character;
+                }
             }
+        }
 
         return null;
     }
@@ -196,7 +286,7 @@ public final class GameManager {
      * @return igaz, ha a játék már elkezdődött; hamis egyébként
      */
     public boolean isGameStarted() {
-        throw new NotImplementedException();
+        return isStarted;
     }
 
     /**
@@ -204,10 +294,16 @@ public final class GameManager {
      * @return igaz, ha a játék már befejeződött; hamis egyébként
      */
     public boolean isGameEnded() {
-        if (remainingCharacters() == 1)
-            return true;
-        else
-            return false;
+        String name = "";
+
+        for (BaseCharacter character : characters) {
+            if (character.isHumanPlayer()) {
+                name = character.getName();
+                break;
+            }
+        }
+
+        return remainingCharacters() == 1 || Objects.requireNonNull(getCharacter(name)).getHp() == 0;
     }
 
     /**
@@ -218,12 +314,6 @@ public final class GameManager {
      * @param tutorial igaz, amennyiben tutorial módot szeretnénk; hamis egyébként
      */
     public void setTutorial(boolean tutorial) {
-        tutorial = false;
-
-    }
-
-
-    public static void main(String[] args) {
-
+        throw new NotImplementedException();
     }
 }

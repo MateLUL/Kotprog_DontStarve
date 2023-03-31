@@ -56,4 +56,11 @@ public interface BaseField {
      * @return a mezőn lévő tárgyak
      */
     AbstractItem[] items();
+
+    /**
+     * Az itemSlots[] tömbbe új elem helyezése.<br>
+     * Az új elem mindig egy üres helyre kerül.
+     * @param item az elhelyezendő értek
+     */
+    void addItems(AbstractItem item);
 }
